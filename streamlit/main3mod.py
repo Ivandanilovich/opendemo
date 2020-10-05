@@ -7,13 +7,13 @@ import sys
 
 
 sys.path.append("C:/Users/ivand/Desktop/AlrosaDemo/")
-from AlrosaDemo.KeyFilter import filter_data, work_with_obs
+from alrosademo.KeyFilter import filter_data, work_with_obs
 
-from AlrosaDemo.ImageProcessor import ImageProcessor
-from AlrosaDemo.LandmarkDetector import LandmarkDetector
-from AlrosaDemo.SSDDetector import SSDDetector, SSDBox
+from alrosademo.ImageProcessor import ImageProcessor
+from alrosademo.LandmarkDetector import LandmarkDetector
+from alrosademo.SSDDetector import SSDDetector, SSDBox
 
-from AlrosaDemo.VideoProcessor import VideoProcessor
+from alrosademo.VideoProcessor import VideoProcessor
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
@@ -40,6 +40,7 @@ def filter_only2hands(handness, handflag, keys):
     # print(keys.shape)
     # 7/0
     return handness, handflag, keys
+
 
 
 def mainpipe():
@@ -73,6 +74,7 @@ def mainpipe():
     vis_images = []
     my_bar = st.progress(0)
     DATA = {}
+
     for mybarindex, i in enumerate(files):
         if mybarindex%2!=0:
             continue

@@ -4,7 +4,7 @@ import tensorflow as tf
 import math
 import matplotlib.pyplot as plt
 
-from AlrosaDemo.ImageProcessor import ImageProcessor
+from alrosademo.ImageProcessor import ImageProcessor
 
 
 class SSDBox:
@@ -150,24 +150,26 @@ if __name__ == '__main__':
 
     imageProcessor = ImageProcessor()
     original_image, padded_image, norm_image, pad = imageProcessor.image_from_dir(
-        '../dataset/frames/hand.jpg')
+        'C:/Users/ivand/Desktop/AlrosaDemo/dataset/alrosa_mouth_frames/98.jpg')
     # plt.imshow(norm_image)
     # plt.show()
+
     d = ssd.predict(norm_image)
 
     box = SSDBox(d[0], pad, padded_image.shape)
 
-    plt.imshow(box.vis_on_image(original_image))
-    plt.show()
+    cv2.imshow('s',box.vis_on_image(original_image))
+    cv2.waitKey()
+    # plt.show()
 
-    k = box.det
-    print('angle', box.calc_angle())
-
-    i = imageProcessor.rotate_image(
-        box.vis_on_image(original_image),
-        box.calc_angle(),
-        k['center'])
-
-    plt.imshow(i)
-    print(i)
-    plt.show()
+    # k = box.det
+    # print('angle', box.calc_angle())
+    #
+    # i = imageProcessor.rotate_image(
+    #     box.vis_on_image(original_image),
+    #     box.calc_angle(),
+    #     k['center'])
+    #
+    # plt.imshow(i)
+    # print(i)
+    # plt.show()

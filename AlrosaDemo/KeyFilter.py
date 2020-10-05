@@ -8,8 +8,8 @@ import numpy as np
 from scipy import interpolate
 from scipy.signal import savgol_filter
 
-from AlrosaDemo.ImageProcessor import ImageProcessor
-from AlrosaDemo.VideoProcessor import VideoProcessor
+from alrosademo.ImageProcessor import ImageProcessor
+from alrosademo.VideoProcessor import VideoProcessor
 
 imageProcessor = ImageProcessor()
 
@@ -20,7 +20,7 @@ def filter_only2hands(handness, handflag, keys):
     handflag = np.array(handflag)
     handflag = np.reshape(handflag, (len(handflag),))
     keys = np.array(keys)
-    if len(handness)<=2:
+    if len(handness)<=4:
         return handness, handflag, keys
     indexes = np.argsort(handness)
     handness = np.take(handness, indexes)[-2:]
@@ -42,7 +42,8 @@ def distance(key_center1, key_center2):
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
 
-def filter_data(data):
+def filter_data(data, image_size=('nohere')):
+    print('image_size', image_size)
     DATA = []
     for frame_index, item in data.items():
         keys = item['keys']
@@ -100,11 +101,11 @@ def my_interpolate(x,y):
     x1 = np.arange(x[0], x[-1]+1)
     y1 = f(x1)
     if len(x1)>9:
-        window_size, poly_order = 9, 1
+        window_size, poly_order = 9, 2
         y1 = savgol_filter(y1, window_size, poly_order)
         return x1, y1
     if len(x1)>3:
-        window_size, poly_order = 3, 1
+        window_size, poly_order = 3, 2
         y1 = savgol_filter(y1, window_size, poly_order)
         return x1, y1
     return x1,y1

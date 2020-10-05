@@ -7,9 +7,9 @@ import tensorflow as tf
 import math
 import matplotlib.pyplot as plt
 
-from AlrosaDemo.ImageProcessor import ImageProcessor
-from AlrosaDemo.SSDDetector import SSDDetector, SSDBox
-from AlrosaDemo.VideoProcessor import VideoProcessor
+from alrosademo.ImageProcessor import ImageProcessor
+from alrosademo.SSDDetector import SSDDetector, SSDBox
+from alrosademo.VideoProcessor import VideoProcessor
 
 
 class LandmarkDetector:
@@ -92,15 +92,38 @@ class LandmarkDetector:
 
 
 if __name__ == '__main__':
-    # ssd = SSDDetector('../models/palm_detection_builtin.tflite')
-    # landmark = LandmarkDetector('../models/hand_landmark.tflite')
-    # imageProcessor = ImageProcessor()
-    # original_image, padded_image, norm_image, pad = imageProcessor.image_from_dir(
-    #     '../dataset/frames/hand.jpg')
+    ssd = SSDDetector('../models/palm_detection_builtin.tflite')
+    landmark = LandmarkDetector('../models/hand_landmark.tflite')
+    imageProcessor = ImageProcessor()
+    original_image, padded_image, norm_image, pad = imageProcessor.image_from_dir(
+        'C:/Users/ivand/Desktop/1603.jpg')
     #
     # d = ssd.predict(norm_image)
     #
     # box = SSDBox(d[0], pad, padded_image.shape)
+
+    vis_image = original_image.copy()
+    for box in ssd.predict(norm_image):
+        ssdbox = SSDBox(box, pad, padded_image.shape)
+        ssdbox.vis_on_image(vis_image)
+        k = ssdbox.det
+        angle = ssdbox.calc_angle()
+
+        rotated_image = imageProcessor.rotate_image(
+            original_image,
+            angle,
+            k['center'].copy())
+
+        keys, handness, handflag = landmark.predict(rotated_image, ssdbox)
+
+        vis_image = imageProcessor.vis_hand(vis_image, keys)
+        ssdbox.vis_on_image(vis_image)
+
+    cv2.imshow('s', vis_image)
+    cv2.waitKey()
+
+
+
     #
     # k = box.det
     # angle = box.calc_angle()
@@ -117,59 +140,59 @@ if __name__ == '__main__':
     # plt.imshow(
     #     imageProcessor.vis_hand(original_image, keys))
     # plt.show()
-    imageProcessor = ImageProcessor()
-    ssd = SSDDetector('../models/palm_detection_builtin.tflite')
-    landmark = LandmarkDetector('../models/hand_landmark.tflite')
-
-    video_id = '8e818262913c4310b7f7d294e8ccd1cd'
-    meta = VideoProcessor.get_video_meta(video_id)
-    files = [f for f in os.listdir('../dataset/frames/{}'.format(video_id))]
-    files = sorted(files, key=lambda x: int(x[:-4]))
-
-    vis_images = []
-    for mybarindex, i in enumerate(files):
-        if mybarindex%5!=0:
-            continue
-        print(mybarindex, i)
-        original_image, padded_image, norm_image, pad = imageProcessor.image_from_dir(
-            os.path.join('../dataset/frames/{}'.format(video_id), i))
-        vis_image = original_image.copy()
-
-        for box in ssd.predict(norm_image):
-            ssdbox = SSDBox(box, pad, padded_image.shape)
-            k = ssdbox.det
-            angle = ssdbox.calc_angle()
-
-            rotated_image = imageProcessor.rotate_image(
-                original_image,
-                angle,
-                k['center'].copy())
-
-            keys, handness, handflag = landmark.predict(rotated_image, ssdbox)
-
-            vis_image = imageProcessor.vis_hand(vis_image, keys)
-        # cv2.imshow('s' , vis_image); cv2.waitKey()
-        vis_images.append(vis_image)
-
-    # with st.spinner('creating video '):
-    shutil.rmtree('../dataset/vis/'+video_id)
-    os.mkdir('../dataset/vis/'+video_id)
-    for iname, i in enumerate(vis_images):
-        plt.imsave('../dataset/vis/{}/{}.jpg'.format(video_id,iname), i)
-    files = [f for f in os.listdir('../dataset/vis/{}'.format(video_id))]
-    files = sorted(files, key=lambda x: int(x[:-4]))
-
-
-    frame_array=[]
-    for i in range(len(files)):
-        filename = '../dataset/vis/{}/'.format(video_id) + files[i]
-        print('filename', filename)
-        img = cv2.imread(filename)
-        height, width, layers = img.shape
-        size = (width, height)
-        frame_array.append(img)
-
-    out = cv2.VideoWriter('.avi', cv2.VideoWriter_fourcc(*'DIVX'), 28, size)
-    for i in range(len(frame_array)):
-        out.write(frame_array[i])
-    out.release()
+    # imageProcessor = ImageProcessor()
+    # ssd = SSDDetector('../models/palm_detection_builtin.tflite')
+    # landmark = LandmarkDetector('../models/hand_landmark.tflite')
+    #
+    # video_id = '8e818262913c4310b7f7d294e8ccd1cd'
+    # meta = VideoProcessor.get_video_meta(video_id)
+    # files = [f for f in os.listdir('../dataset/frames/{}'.format(video_id))]
+    # files = sorted(files, key=lambda x: int(x[:-4]))
+    #
+    # vis_images = []
+    # for mybarindex, i in enumerate(files):
+    #     if mybarindex%5!=0:
+    #         continue
+    #     print(mybarindex, i)
+    #     original_image, padded_image, norm_image, pad = imageProcessor.image_from_dir(
+    #         os.path.join('../dataset/frames/{}'.format(video_id), i))
+    #     vis_image = original_image.copy()
+    #
+    #     for box in ssd.predict(norm_image):
+    #         ssdbox = SSDBox(box, pad, padded_image.shape)
+    #         k = ssdbox.det
+    #         angle = ssdbox.calc_angle()
+    #
+    #         rotated_image = imageProcessor.rotate_image(
+    #             original_image,
+    #             angle,
+    #             k['center'].copy())
+    #
+    #         keys, handness, handflag = landmark.predict(rotated_image, ssdbox)
+    #
+    #         vis_image = imageProcessor.vis_hand(vis_image, keys)
+    #     # cv2.imshow('s' , vis_image); cv2.waitKey()
+    #     vis_images.append(vis_image)
+    #
+    # # with st.spinner('creating video '):
+    # shutil.rmtree('../dataset/vis/'+video_id)
+    # os.mkdir('../dataset/vis/'+video_id)
+    # for iname, i in enumerate(vis_images):
+    #     plt.imsave('../dataset/vis/{}/{}.jpg'.format(video_id,iname), i)
+    # files = [f for f in os.listdir('../dataset/vis/{}'.format(video_id))]
+    # files = sorted(files, key=lambda x: int(x[:-4]))
+    #
+    #
+    # frame_array=[]
+    # for i in range(len(files)):
+    #     filename = '../dataset/vis/{}/'.format(video_id) + files[i]
+    #     print('filename', filename)
+    #     img = cv2.imread(filename)
+    #     height, width, layers = img.shape
+    #     size = (width, height)
+    #     frame_array.append(img)
+    #
+    # out = cv2.VideoWriter('.avi', cv2.VideoWriter_fourcc(*'DIVX'), 28, size)
+    # for i in range(len(frame_array)):
+    #     out.write(frame_array[i])
+    # out.release()

@@ -60,6 +60,26 @@ class VideoProcessor:
             count += 1
         return 'frames created'
 
+    @staticmethod
+    def split_video(video_id, savedir=None):
+        if savedir:
+            print('savedir', savedir)
+            os.mkdir(f'temp/{video_id}')
+
+        frames = []
+
+        vidcap = cv2.VideoCapture('../dataset/videos/{}.mp4'.format(video_id))
+        success, image = vidcap.read()
+        count = 0
+        while success:
+            if savedir:
+                cv2.imwrite(f"temp/{video_id}/{count}.jpg", image)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            frames.append(image)
+            success, image = vidcap.read()
+            count += 1
+        return frames
+
 
 if __name__ == '__main__':
     meta = VideoProcessor.get_video_meta('d9371ee6b22a44e8b164ad0c4fe2d5da')
