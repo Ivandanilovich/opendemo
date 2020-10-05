@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 import sys
 
-sys.path.append("C:/Users/ivand/Desktop/AlrosaDemo/")
+sys.path.append("/content/opendemo/")
 from alrosademo.KeyFilter import filter_data, work_with_obs
 
 from alrosademo.ImageProcessor import ImageProcessor
@@ -18,7 +18,7 @@ from alrosademo.VideoProcessor import VideoProcessor
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-STATIC_PATH = 'C:/Users/ivand/.conda/envs/tf/Lib/site-packages/streamlit/static/'
+STATIC_PATH = '/usr/local/lib/python3.6/dist-packages/streamlit/static/'
 
 
 def filter_only2hands(handness, handflag, keys):
@@ -162,7 +162,8 @@ def mainpipe():
     # st.markdown('<a href="{}"  download="video.mp4">Download video</a>'.format('{}.mp4'.format(video_id)),
     #             unsafe_allow_html=True)
     # 7/0
-
+    files = [i[0]for i in files]
+    files = sorted(files, key=lambda x: int(x[:-4]))
     frames = [cv2.imread('../dataset/frames/{}/{}'.format(video_id, i)) for i in files]
     frames = work_with_obs(obs, frames)
 

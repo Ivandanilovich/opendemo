@@ -68,7 +68,7 @@ def filter_data(data, image_size=('nohere')):
             np.max(keys[:, 0]),
             np.max(keys[:, 1])]
         square = (xmax - xmin) * (ymax - ymin)
-        if square < 500:
+        if square < 1000:
             continue
         DATA.append((frame_index, handness, handflag, keys))
 
@@ -82,8 +82,8 @@ def filter_data(data, image_size=('nohere')):
             delta_keys = distance(key_center(keys), key_center(last_one[3]))
             # print('delta', delta_flag, delta_index, delta_keys)
             if delta_keys < 50 \
-                    and delta_flag < 0.6 \
-                    and delta_index < 16 and delta_index > 0:
+                    and delta_flag < 0.5 \
+                    and delta_index < 4 and delta_index > 0:
                 ob_element.append(
                     (frame_index, handness, handflag, keys)
                 )
