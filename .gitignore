@@ -8,6 +8,7 @@ __pycache__/
 
 #PyCharm
 .idea/
+temp/
 
 #dataset and temp files
 /dataset

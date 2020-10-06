@@ -7,7 +7,10 @@ import matplotlib.pyplot as plt
 
 import sys
 
-sys.path.append("/content/opendemo/")
+
+sys.path.append("C:/Users/ivand/Desktop/AlrosaDemo/")
+from alrosademo.utils import getframedtonohanda
+
 from alrosademo.KeyFilter import filter_data, work_with_obs
 
 from alrosademo.ImageProcessor import ImageProcessor
@@ -18,35 +21,15 @@ from alrosademo.VideoProcessor import VideoProcessor
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-STATIC_PATH = '/usr/local/lib/python3.6/dist-packages/streamlit/static/'
+STATIC_PATH = 'C:/Users/ivand/.conda/envs/tf/Lib/site-packages/streamlit/static/'
 
 
-def filter_only2hands(handness, handflag, keys):
-    handness = np.array(handness)
-    handness = np.reshape(handness, (len(handness),))
-
-    handflag = np.array(handflag)
-    handflag = np.reshape(handflag, (len(handflag),))
-
-    keys = np.array(keys)
-    # print(keys.shape, keys)
-
-    if len(handness) <= 2:
-        return handness, handflag, keys
-    indexes = np.argsort(handness)
-    handness = np.take(handness, indexes)[-2:]
-    handflag = np.take(handflag, indexes)[-2:]
-    keys = np.take(keys, indexes, 0)[-2:]
-    # keys =
-    # print('sssssss')
-    # print(keys.shape)
-    # 7/0
-    return handness, handflag, keys
 
 imageProcessor = ImageProcessor()
 ssd = SSDDetector('../models/palm_detection_builtin.tflite')
 landmark = LandmarkDetector('../models/hand_landmark.tflite')
-# VIDEO_ID=0
+
+
 def funtopar(f):
     file, VIDEO_ID = f
     original_image, padded_image, norm_image, pad = imageProcessor.image_from_dir(
@@ -72,8 +55,10 @@ def funtopar(f):
         stored_handflag.append(handflag)
 
     return {
-        'ind': int(file.split('.')[0]), 'bbox': stored_box, 'keys': stored_keys, 'handness': stored_handness, 'handflag': stored_handflag
+        'ind': int(file.split('.')[0]), 'bbox': stored_box, 'keys': stored_keys, 'handness': stored_handness,
+        'handflag': stored_handflag
     }
+
 
 def mainpipe():
     video_byteio = st.file_uploader('video')
@@ -88,27 +73,47 @@ def mainpipe():
 
     meta = VideoProcessor.get_video_meta(video_id)
 
-    'image meta information', meta
+    'image meta information'
+    meta
 
-    status = VideoProcessor.save_video_to_frames(video_id)
-
-    'frames created'
     ' '
+    'splitting video into frames...'
 
-    imageProcessor = ImageProcessor()
-    ssd = SSDDetector('../models/palm_detection_builtin.tflite')
-    landmark = LandmarkDetector('../models/hand_landmark.tflite')
+    splitvideo_progress = st.progress(0)
+    path = '../dataset/frames/{}'.format(video_id)
+    os.mkdir(path)
+    vidcap = cv2.VideoCapture('../dataset/videos/{}.mp4'.format(video_id))
+    success, image = vidcap.read()
+    count = 0
+    while success:
+        cv2.imwrite("{}/{}.jpg".format(path, count), image)
+        success, image = vidcap.read()
+        count += 1
+        splitvideo_progress.progress(int(count/meta['frame_count']*100) )
+    # status = VideoProcessor.save_video_to_frames(video_id)
 
-    files = [[f,video_id] for f in os.listdir('../dataset/frames/{}'.format(video_id))]
-    # files = sorted(files, key=lambda x: int(x[:-4]))
-    # st.write(len(files))
-    # st.write('seses')
-    vis_images = []
+
+    ' '
+    'predicting...'
+
+
+
+    files = [[f, video_id] for f in os.listdir('../dataset/frames/{}'.format(video_id))]
+    downfiles = files[::2]
+
     my_bar = st.progress(0)
     DATA = {}
 
+    answer=[]
     with Pool(7) as p:
-        answer = p.map(funtopar, files)
+        counter=0
+        for x in p.imap(funtopar, downfiles):
+            counter+=1
+            my_bar.progress(counter/len(downfiles))
+            answer.append(x)
+
+    # with Pool(7) as p:
+        # answer = p.map(funtopar, files)
 
     # answer
     # st.write(type(answer))
@@ -119,11 +124,13 @@ def mainpipe():
     # DATA = answer
     # import pickle
     # pickle.dump(DATA, open('../cache/{}.pickle'.format(video_id), 'wb'))
-    DATA={}
+    ' '
+    'visualizing...'
+
+    DATA = {}
     # print(answer)
     # print()
     for i in answer:
-
         DATA[i['ind']] = {
             'bbox': i['bbox'],
             'keys': i['keys'],
@@ -132,40 +139,48 @@ def mainpipe():
         }
         # 4/0
 
+    import pickle
+    pickle.dump(DATA, open('../cache/{}.pickle'.format(video_id), 'wb'))
+
     # frames = [plt.imread('../dataset/frames/{}/{}'.format(video_id, i)) for i in files]
     # 'frameslenhere', len(frames)
     #
-    obs = filter_data(DATA)
-    # for i in obs:
-    #     for j in i:
-    #         index = j[0]
-    #         key = j[3]
-    #         frames[index] = imageProcessor.vis_hand(frames[index], key)
-    #
-    #
-    #
-    # path_to_video = STATIC_PATH+'{}.mp4'.format(video_id)
-    # out = cv2.VideoWriter(path_to_video,
-    #                       cv2.VideoWriter_fourcc(*'mp4v'),
-    #                       meta['fps'],
-    #                       (meta['frame_width'], meta['frame_height']))
-    # cv2.VideoWriter()
-    # for ind in range(len(frames)):
-    #     out.write(frames[ind])
-    # out.release()
+    obs = filter_data(DATA, max(meta['frame_height'], meta['frame_width']))
 
-    # video_file = open(STATIC_PATH+'{}.mp4'.format(video_id), 'rb')
-    # video_bytes = video_file.read()
-    # st.video(video_bytes)
-
-    # st.markdown('<a href="{}"  target="_blank">Download video</a>'.format('{}.mp4'.format(video_id)), unsafe_allow_html=True)
-    # st.markdown('<a href="{}"  download="video.mp4">Download video</a>'.format('{}.mp4'.format(video_id)),
-    #             unsafe_allow_html=True)
-    # 7/0
-    files = [i[0]for i in files]
+    files = [i[0] for i in files]
     files = sorted(files, key=lambda x: int(x[:-4]))
-    frames = [cv2.imread('../dataset/frames/{}/{}'.format(video_id, i)) for i in files]
-    frames = work_with_obs(obs, frames)
+    frames = []
+    visbar = st.progress(0)
+    counter = 0
+    for iiii in files:
+        frames.append(cv2.imread('../dataset/frames/{}/{}'.format(video_id, iiii)))
+        counter+=1
+
+        visbar.progress(counter / meta['frame_count'])
+
+    visframesdata = work_with_obs(obs)
+
+    for ii,jj in visframesdata:
+        frames[ii] = imageProcessor.vis_hand(frames[ii], jj)
+
+
+
+    selected_nohands = getframedtonohanda(obs, meta['fps'], meta['frame_count'])
+    # selected_nohands
+
+    for i in selected_nohands:
+        # frames[i] = cv2.putText(frames[i], 'NO HANDS',
+        #                         (100, 200),
+        #                         cv2.FONT_HERSHEY_SIMPLEX,
+        #                         1,
+        #                         (255, 0, 0),
+        #                         2)
+        frames[i] = cv2.putText(frames[i], 'NO HANDS',
+                                (0, frames[i].shape[0]-30),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                1,
+                                (0, 0, 255),
+                                2)
 
     path_to_video = STATIC_PATH + '{}.mp4'.format(video_id + '4')
     out = cv2.VideoWriter(path_to_video,
@@ -173,8 +188,12 @@ def mainpipe():
                           meta['fps'],
                           (meta['frame_width'], meta['frame_height']))
     cv2.VideoWriter()
+    ' '
+    'building video...'
+    buildvideo_progress = st.progress(0)
     for ind in range(len(frames)):
         out.write(frames[ind])
+        buildvideo_progress.progress(int(ind / meta['frame_count'] *100) +1)
     out.release()
     st.markdown('<a href="{}"  download="video.mp4">Download video</a>'.format('{}.mp4'.format(video_id + '4')),
                 unsafe_allow_html=True)

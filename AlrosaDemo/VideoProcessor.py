@@ -44,10 +44,6 @@ class VideoProcessor:
     @staticmethod
     def save_video_to_frames(id):
         path = '../dataset/frames/{}'.format(id)
-
-        if os.path.isdir(path):
-            return 'frames exist'
-
         os.mkdir(path)
 
 
@@ -61,19 +57,12 @@ class VideoProcessor:
         return 'frames created'
 
     @staticmethod
-    def split_video(video_id, savedir=None):
-        if savedir:
-            print('savedir', savedir)
-            os.mkdir(f'temp/{video_id}')
-
-        frames = []
-
+    def split_videoget_frames(video_id, savedir=None):
         vidcap = cv2.VideoCapture('../dataset/videos/{}.mp4'.format(video_id))
         success, image = vidcap.read()
         count = 0
+        frames = []
         while success:
-            if savedir:
-                cv2.imwrite(f"temp/{video_id}/{count}.jpg", image)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             frames.append(image)
             success, image = vidcap.read()

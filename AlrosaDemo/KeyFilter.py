@@ -42,8 +42,8 @@ def distance(key_center1, key_center2):
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
 
-def filter_data(data, image_size=('nohere')):
-    print('image_size', image_size)
+def filter_data(data, image_size_maxsize):
+    # print('image_size', image_size)
     DATA = []
     for frame_index, item in data.items():
         keys = item['keys']
@@ -67,8 +67,8 @@ def filter_data(data, image_size=('nohere')):
             np.min(keys[:, 1]),
             np.max(keys[:, 0]),
             np.max(keys[:, 1])]
-        square = (xmax - xmin) * (ymax - ymin)
-        if square < 1000:
+        maxside = max((xmax - xmin) , (ymax - ymin))
+        if maxside < 0.04 * image_size_maxsize:
             continue
         DATA.append((frame_index, handness, handflag, keys))
 
@@ -81,9 +81,9 @@ def filter_data(data, image_size=('nohere')):
             delta_index = abs(last_one[0] - frame_index)
             delta_keys = distance(key_center(keys), key_center(last_one[3]))
             # print('delta', delta_flag, delta_index, delta_keys)
-            if delta_keys < 50 \
+            if delta_keys < 0.01 * image_size_maxsize \
                     and delta_flag < 0.5 \
-                    and delta_index < 4 and delta_index > 0:
+                    and delta_index < 20 and delta_index > 0:
                 ob_element.append(
                     (frame_index, handness, handflag, keys)
                 )
@@ -110,15 +110,17 @@ def my_interpolate(x,y):
         return x1, y1
     return x1,y1
 
+MISS_COUNT=3
 
-def work_with_obs(OBS, frames):
+def work_with_obs(OBS):
+    out=[]
     obs2 = []
     for i in OBS:
         obs2.append([len(i), i])
     obs2 = sorted(obs2, key=lambda x: -x[0])
 
     for ob in obs2:
-        if ob[0] == 1:
+        if ob[0] <= MISS_COUNT:
             continue
         x, y = [], []
         for i in ob[1]:
@@ -142,9 +144,44 @@ def work_with_obs(OBS, frames):
 
         for index, i in enumerate(range(arr.shape[1])):
             key = arr[:, i, :]
-            frames[newx[index]] = imageProcessor.vis_hand(frames[newx[index]], key)
+            # frames[newx[index]] = imageProcessor.vis_hand(frames[newx[index]], key)
+            out.append([newx[index], key])
 
-    return frames
+    return out
+
+def work_with_obs_indexes(OBS):
+    IndeX=[]
+    obs2 = []
+    for i in OBS:
+        obs2.append([len(i), i])
+    obs2 = sorted(obs2, key=lambda x: -x[0])
+
+    for ob in obs2:
+        if ob[0] <= MISS_COUNT:
+            continue
+        x, y = [], []
+        for i in ob[1]:
+            # print(i[3])
+            x.append(i[0])
+            y.append(i[3])
+        y = np.array(y)
+
+        xses, yses = [], []
+        for i in range(0, 21):
+            xs, ys = y[:, i, 0], y[:, i, 1]
+
+            newx, newxs = my_interpolate(x, xs)
+            newx, newys = my_interpolate(x, ys)
+            xses.append(newxs)
+            yses.append(newys)
+
+        xses = np.array(xses)
+        yses = np.array(yses)
+        arr = np.stack([xses, yses], 2)
+
+        for index, i in enumerate(range(arr.shape[1])):
+            IndeX.append(newx[index])
+    return IndeX
 
 if __name__ == '__main__':
     DATA = pickle.load(open('../cache/ti.pickle', 'rb'))
