@@ -176,11 +176,11 @@ def mainpipe():
         #                         (255, 0, 0),
         #                         2)
         frames[i] = cv2.putText(frames[i], 'NO HANDS',
-                                (0, frames[i].shape[0]-30),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                1,
+                                (0, 150),
+                                cv2.FONT_HERSHEY_TRIPLEX,
+                                2,
                                 (0, 0, 255),
-                                2)
+                                3)
 
     path_to_video = STATIC_PATH + '{}.mp4'.format(video_id + '4')
     out = cv2.VideoWriter(path_to_video,

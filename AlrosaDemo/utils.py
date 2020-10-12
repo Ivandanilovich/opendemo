@@ -41,6 +41,7 @@ def getframedtonohanda(obs, fpsvalue, frames_count):
             #     continue
             li = li[::2]
             selected+=li
-
+    if frames_numbers[1] >= fpsvalue // 2:
+        selected += [i for i in range(frames_numbers[1])][::2]
     # print(selected)
     return selected
