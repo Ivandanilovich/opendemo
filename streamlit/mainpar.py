@@ -107,7 +107,7 @@ def mainpipe():
     DATA = {}
 
     answer=[]
-    with Pool(7) as p:
+    with Pool(4) as p:
         counter=0
         for x in p.imap(funtopar, downfiles):
             counter+=1
