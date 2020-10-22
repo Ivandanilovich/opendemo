@@ -11,8 +11,8 @@ __pycache__/
 temp/
 
 #dataset and temp files
-/dataset
-/cache
+#/dataset
+#/cache
 
 # Distribution / packaging
 .Python

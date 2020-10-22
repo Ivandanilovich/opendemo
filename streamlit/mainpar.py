@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import sys
 
 
-sys.path.append("C:/Users/ivand/Desktop/AlrosaDemo/")
+
+sys.path.append("/home/dev/alrosademo/opendemo/")
 from alrosademo.utils import getframedtonohanda
 
 from alrosademo.KeyFilter import filter_data, work_with_obs
@@ -21,7 +22,8 @@ from alrosademo.VideoProcessor import VideoProcessor
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-STATIC_PATH = 'C:/Users/ivand/.conda/envs/tf/Lib/site-packages/streamlit/static/'
+STATIC_PATH = '/home/dev/alrosademo/anaconda3/envs/alrosa/lib/python3.7/site-packages/streamlit/static/'
+
 
 
 
