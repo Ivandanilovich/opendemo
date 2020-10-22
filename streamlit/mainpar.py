@@ -9,7 +9,7 @@ import sys
 
 
 
-sys.path.append("/home/dev/alrosademo/opendemo/")
+sys.path.append("/kaggle/working/opendemo/")
 from alrosademo.utils import getframedtonohanda
 
 from alrosademo.KeyFilter import filter_data, work_with_obs
@@ -22,7 +22,7 @@ from alrosademo.VideoProcessor import VideoProcessor
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
-STATIC_PATH = '/home/dev/alrosademo/anaconda3/envs/alrosa/lib/python3.7/site-packages/streamlit/static/'
+STATIC_PATH = '/opt/conda/lib/python3.7/site-packages/streamlit/static/'
 
 
 
