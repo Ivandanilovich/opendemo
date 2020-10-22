@@ -187,7 +187,7 @@ def mainpipe():
                           cv2.VideoWriter_fourcc(*'mp4v'),
                           meta['fps'],
                           (meta['frame_width'], meta['frame_height']))
-    cv2.VideoWriter()
+    # cv2.VideoWriter()
     ' '
     'building video...'
     buildvideo_progress = st.progress(0)
